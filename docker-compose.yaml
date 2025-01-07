@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+  mysql-db:
+    container_name: mysql-container
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: studentdb
+      MYSQL_USER: studentuser
+      MYSQL_PASSWORD: password
+    volumes:
+      - ./mysql.sql:/docker-entrypoint-initdb.d/mysql.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "-h", "localhost", "-uroot", "-prootpassword", "version"]
+      interval: 10s
+      retries: 5
+    networks:
+      - app-network
+
+  springboot-app:
+    container_name: student-app
+    image: student:v3
+    build:
+      context: .
+    ports:
+      - "8282:8282"
+    environment:
+      DB_URL: jdbc:mysql://mysql-container/studentdb
+      DB_USERNAME: studentuser
+      DB_PASSWORD: password
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    name: app-network
+    driver: bridge
+
