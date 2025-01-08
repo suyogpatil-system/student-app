@@ -5,11 +5,9 @@ on:
     branches: [ "CI-CD" ]
   pull_request:
     branches: [ "CI-CD" ]
-
-jobs:
-
 env:
   IMAGE_NAME: student-app
+jobs:
 
   build:
 
