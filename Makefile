@@ -1,11 +1,20 @@
 run:
 	mvn spring-boot:run
 
+# Build API
 build:
-	mvn clean package
+	@echo "Building the API..."
+	mvn clean package -DskipTests
 
+# Run tests
 test:
+	@echo "Running tests..."
 	mvn test
+
+# Perform linting
+lint:
+	@echo "Performing linting..."
+	mvn checkstyle:check
 
 docker-app-build:
 	#echo "Building Docker image for the Spring Boot application..."
