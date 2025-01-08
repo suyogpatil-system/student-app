@@ -74,7 +74,7 @@ docker-build:
 	docker build -t $(IMAGE_NAME):$(TAG) .
 
 docker-push:
-	echo $(DOCKERHUB_PASSWORD) | docker login -u $(DOCKERHUB_USERNAME) --password-stdin
+	#echo $(DOCKERHUB_PASSWORD) | docker login -u $(DOCKERHUB_USERNAME) --password-stdin
 	docker push $(IMAGE_NAME):$(TAG)
 
 all: docker-build docker-push
