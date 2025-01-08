@@ -1,4 +1,16 @@
+# Variables
+DOCKER_IMAGE=student-app:v1
+NETWORK_NAME=app-network
+DB_CONTAINER=mysql-container
+DB_PORT=3306
+DB_ROOT_PASSWORD=rootpassword
+DB_NAME=studentdb
+DB_USER=studentuser
+DB_PASSWORD=password
+
+# Run Spring Boot application locally
 run:
+	@echo "Running Spring Boot application locally..."
 	mvn spring-boot:run
 
 # Build API
@@ -16,21 +28,45 @@ lint:
 	@echo "Performing linting..."
 	mvn checkstyle:check
 
+# Build Docker image for the Spring Boot application
 docker-app-build:
-	#echo "Building Docker image for the Spring Boot application..."
-	docker build -t student-app:v1 .
+	@echo "Building Docker image for the Spring Boot application..."
+	docker build -t ${DOCKER_IMAGE} .
 
+# Create Docker private network (if not exists)
 docker-network-create:
-	#echo "Creating Docker Private Network..."
-	docker network create app-network
+	@echo "Creating Docker private network..."
+	@if ! docker network ls | grep -q ${NETWORK_NAME}; then \
+		docker network create ${NETWORK_NAME}; \
+	else \
+		echo "Network '${NETWORK_NAME}' already exists."; \
+	fi
 
+# Run MySQL Docker container
 docker-db-run:
-	#echo "Running MySQL Docker container..."
-        docker run --net=app-network -d --name mysql-container   -e MYSQL_ROOT_PASSWORD=rootpassword   -e MYSQL_DATABASE=studentdb   -e MYSQL_USER=studentuser   -e MYSQL_PASSWORD=password   -p 3306:3306   mysql:latest
+	@echo "Running MySQL Docker container..."
+	@if ! docker ps | grep -q ${DB_CONTAINER}; then \
+		docker run --net=${NETWORK_NAME} -d --name ${DB_CONTAINER} \
+		-e MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD} \
+		-e MYSQL_DATABASE=${DB_NAME} \
+		-e MYSQL_USER=${DB_USER} \
+		-e MYSQL_PASSWORD=${DB_PASSWORD} \
+		-p ${DB_PORT}:${DB_PORT} \
+		mysql:latest; \
+	else \
+		echo "Database container '${DB_CONTAINER}' is already running."; \
+	fi
 
-docker-app-run:
-	#echo "Running Spring Boot application in Docker...
-        docker run --net=app-network -it -P -e DB_URL=jdbc:mysql://127.0.0.1:3306/studentdb -e DB_USERNAME=studentuser -e DB_PASSWORD=password student-app:v1
+# Run Spring Boot application in Docker
+docker-app-run: docker-network-create docker-db-run
+	@echo "Running Spring Boot application in Docker..."
+	docker run --net=${NETWORK_NAME} -it -P \
+	-e DB_URL=jdbc:mysql://${DB_CONTAINER}:${DB_PORT}/${DB_NAME} \
+	-e DB_USERNAME=${DB_USER} \
+	-e DB_PASSWORD=${DB_PASSWORD} \
+	${DOCKER_IMAGE}
 
+# Start Docker Compose
 docker-compose-start:
-	#docker-compose up --build
+	@echo "Starting services using Docker Compose..."
+	docker-compose up --build
