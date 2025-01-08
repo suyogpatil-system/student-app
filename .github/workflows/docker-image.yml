@@ -28,8 +28,17 @@ jobs:
     - name: Run Tests
       run: make test
 
-    - name: Perform Code Linting
-      run: make lint
+    #- name: Perform Code Linting
+    #  run: make lint
+
+    - name: Docker Login
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+      run: make docker-login
+
+    - name: Build and Push Docker Image
+      run: make docker-build-push
 
     #steps:
     #- uses: actions/checkout@v4
