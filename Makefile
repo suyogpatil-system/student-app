@@ -1,5 +1,8 @@
-# Variables
-DOCKER_IMAGE=student-app:v1
+# Define variables
+DOCKER_IMAGE=student-api
+DOCKER_TAG=v1
+DOCKER_REGISTRY=suyogpatil/student-app
+CODE_DIR=src/
 NETWORK_NAME=app-network
 DB_CONTAINER=mysql-container
 DB_PORT=3306
@@ -65,6 +68,22 @@ docker-app-run: docker-network-create docker-db-run
 	-e DB_USERNAME=${DB_USER} \
 	-e DB_PASSWORD=${DB_PASSWORD} \
 	${DOCKER_IMAGE}
+
+# Docker login
+docker-login:
+	@echo "Logging into Docker registry..."
+	echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+
+# Docker build and push
+docker-build-push: docker-login
+	@echo "Building Docker image..."
+	docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .
+	@echo "Pushing Docker image..."
+	docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
+
+# Combined target for CI pipeline
+ci: build test lint docker-build-push
+	@echo "CI pipeline completed."
 
 # Start Docker Compose
 docker-compose-start:
