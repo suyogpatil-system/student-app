@@ -12,6 +12,42 @@ DB_NAME=studentdb
 DB_USER=studentuser
 DB_PASSWORD=password
 
+# Install Java (OpenJDK 17)
+install-java:
+	@echo "Installing Java (OpenJDK 17)..."
+	sudo apt-get update
+	sudo apt-get install -y openjdk-17-jdk
+	java -version
+	@echo "Java installation completed!"
+
+install-maven:
+	@echo "Installing Maven $(MAVEN_VERSION)..."
+	sudo apt-get update
+	sudo apt-get install -y wget
+	wget https://dlcdn.apache.org/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.tar.gz
+	sudo tar -xvzf apache-maven-3.8.8-bin.tar.gz -C /opt
+	sudo rm -rf /usr/bin/mvn
+	sudo ln -s /opt/apache-maven-3.8.8/bin/mvn /usr/bin/mvn
+	mvn -version
+	sudo rm -rf apache-maven-3.8.8-bin.*
+	@echo "Maven installation completed!"
+
+# Install Docker (optional for containerization)
+install-docker:
+	@echo "Installing Docker..."
+	@sudo apt-get update
+	@sudo apt-get install ca-certificates curl
+	@sudo install -m 0755 -d /etc/apt/keyrings
+	@sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+	@sudo chmod a+r /etc/apt/keyrings/docker.asc
+	@echo "deb [arch=$(ARCH) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(VERSION_CODENAME) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+	@sudo apt-get update
+	@sudo apt-get install -y -f  containerd.io docker-ce docker-ce-cli docker-compose docker-buildx-plugin docker-compose-plugin
+	@docker --version
+	@echo "Docker installation completed!"
+
+install-all: install-java install-maven install-docker
+
 # Run Spring Boot application locally
 run:
 	@echo "Running Spring Boot application locally..."
