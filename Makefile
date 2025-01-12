@@ -117,5 +117,10 @@ all: docker-build docker-push
 
 # Start Docker Compose
 docker-compose-start:
-	@echo "Starting services using Docker Compose..."
-	docker-compose up --build
+	@chmod +x nginx/envfornginx.sh
+	@./nginx/envfornginx.sh
+	@docker-compose up
+
+#docker-compose-start:
+#	@echo "Starting services using Docker Compose..."
+#	docker-compose up --build
