@@ -11,3 +11,4 @@ public class HealthCheckController {
         return "Application is running";
     }
 }
+
