@@ -24,5 +24,5 @@ COPY --from=build /app/target/student-api-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8282
 
 # Run the Spring Boot application
-ENTRYPOINT ["java -jar /app/app.jar"]
+CMD ["java","-jar","/app/app.jar"]
 
