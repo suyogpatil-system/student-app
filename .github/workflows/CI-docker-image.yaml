@@ -31,7 +31,7 @@ jobs:
     steps:
       - name: Set commit
         id: set-commit
-        run: echo "::set-output name=commit::$(git rev-parse --short HEAD)"
+        run: echo "::set-output name=commit::$(git rev-parse --abbrev-ref HEAD)"
   build:
     name: Docker Build and Push
     needs: [build_and_test,set-commit]
