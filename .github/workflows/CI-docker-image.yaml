@@ -2,11 +2,9 @@ name: Docker Image CI
 
 on:
   push:
-    paths:
-      - 'src/**'
+    branches: [ "CI-CD" ]
   pull_request:
-    paths:
-      - 'src/**'
+    branches: [ "CI-CD" ]
 env:
   IMAGE_NAME: student-app
 jobs:
