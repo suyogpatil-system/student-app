@@ -71,7 +71,7 @@ jobs:
 
       - name: Update values.yaml
         run: |
-          sed -i "s|tag:.*|tag: ${{ secrets.DOCKERHUB_USERNAME }}/student-app:${{ needs.set-commit.outputs.commit }}|" helm-chart/student-app/values.yaml
+          sed -i "s|tag:.*|tag: ${{ needs.set-commit.outputs.commit }}|" helm-chart/student-app/values.yaml
 
       - name: Commit and Push Changes
         run: |
