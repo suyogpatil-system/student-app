@@ -5,6 +5,7 @@ on:
     branches: [ "CI-CD" ]
   pull_request:
     branches: [ "CI-CD" ]
+
 jobs:
   build_and_test:
     runs-on: ubuntu-latest
@@ -27,14 +28,14 @@ jobs:
   set-commit:
     runs-on: ubuntu-latest
     outputs:
-      commit: ${{ steps.set-commit.outputs.commit }}
+      commit: ${{ steps.get_commit.outputs.commit }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Get Short Commit Hash
-        id: set-commit
-        run: echo "commit=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        id: get_commit
+        run: echo "::set-output name=commit::$(git rev-parse --short HEAD)"
 
   build:
     name: Docker Build and Push
@@ -42,7 +43,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IMAGE_NAME: student-app
-      COMMIT: ${{ env.commit }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -59,21 +59,19 @@ jobs:
           context: .
           file: Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:v4
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ needs.set-commit.outputs.commit }}
 
   update-values:
     name: Update values.yaml with latest image
     needs: [build, set-commit]
     runs-on: ubuntu-latest
-    env:
-      IMAGE_TAG: ${{ secrets.DOCKERHUB_USERNAME }}/student-app:v4
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Update values.yaml
         run: |
-          sed -i "s|tag:.*|tag: ${{ env.IMAGE_TAG }}|" helm-chart/student-app/values.yaml
+          sed -i "s|tag:.*|tag: ${{ secrets.DOCKERHUB_USERNAME }}/student-app:${{ needs.set-commit.outputs.commit }}|" helm-chart/student-app/values.yaml
 
       - name: Commit and Push Changes
         run: |
