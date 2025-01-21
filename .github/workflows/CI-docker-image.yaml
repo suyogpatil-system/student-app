@@ -15,52 +15,66 @@ jobs:
   build_and_test:
     runs-on: ubuntu-latest
     outputs:
-      commit_hash: ${{ steps.get_commit_hash.outputs.commit_hash }}
+      commit_hash: ${{ steps.get_commit_hash.outputs.commit_hash }}  # Pass the commit hash as an output
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Java
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        java-version: '17'
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
-    - name: Build API
-      run: make build
+      - name: Build API
+        run: make build
 
-    - name: Run Tests
-      run: make test
+      - name: Run Tests
+        run: make test
 
-    - name: Get commit hash
-      id: get_commit_hash
-      run: |
-        commit_hash=$(git rev-parse --short HEAD)
-        echo "commit_hash=$commit_hash" >> $GITHUB_ENV
-        echo "commit_hash=$commit_hash" >> $GITHUB_OUTPUT
+      - name: Get commit hash
+        id: get_commit_hash
+        run: echo "commit_hash=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        outputs:
+          commit_hash: ${{ env.commit_hash }}  # Set commit hash as output
 
   docker_build_and_push:
     needs: build_and_test
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Debug commit hash
-      run: echo "Commit hash: ${{ needs.build_and_test.outputs.commit_hash }}"
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ needs.build_and_test.outputs.commit_hash }}
 
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        file: Dockerfile
-        push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ needs.build_and_test.outputs.commit_hash || 'latest' }}
+  update_values:
+    needs: docker_build_and_push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Update values.yaml
+        run: |
+          sed -i "s|tag:.*|tag: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ needs.build_and_test.outputs.commit_hash }}|" helm-chart/student-app/values.yaml
+
+      - name: Commit and push updated values.yaml
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add helm-chart/student-app/values.yaml
+          git commit -m "Update values.yaml with tag ${{ needs.build_and_test.outputs.commit_hash }}"
+          git push
