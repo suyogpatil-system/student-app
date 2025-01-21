@@ -1,0 +1,19 @@
+replicaCount: 1
+namespace: student-api-ns
+image:
+  repository: suyogpatil/student-app
+  tag: v2
+  pullPolicy: IfNotPresent
+service:
+  type: NodePort
+  port: 8282
+  nodePort: 30007
+db:
+  name: studentdb
+  username: studentuser
+  passwordSecretName: db-secret
+  passwordKey: DB_PASSWORD
+mysql:
+  host: mysql-service
+  sqlConfigMapName: sql-file
+  sqlFile: mysql.sql
