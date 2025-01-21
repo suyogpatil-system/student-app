@@ -62,14 +62,14 @@ jobs:
           context: .
           file: Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.COMMIT }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:v4
 
   update-values:
     name: Update values.yaml with latest image
     needs: [build, set-commit]
     runs-on: self-hosted
     env:
-      IMAGE_TAG: ${{ secrets.DOCKERHUB_USERNAME }}/student-app:${{ env.commit }}
+      IMAGE_TAG: ${{ secrets.DOCKERHUB_USERNAME }}/student-app:v4
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
