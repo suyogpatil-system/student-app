@@ -38,13 +38,14 @@ jobs:
 
     - name: Get commit hash
       id: get_commit_hash
-      run: echo "commit_hash=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+      run: |
+        commit_hash=$(git rev-parse --short HEAD)
+        echo "commit_hash=$commit_hash" >> $GITHUB_ENV
+        echo "::set-output name=commit_hash::$commit_hash"
 
   docker_build_and_push:
     needs: build_and_test
     runs-on: ubuntu-latest
-    outputs:
-      commit_hash: ${{ needs.build_and_test.outputs.commit_hash }}
 
     steps:
     - name: Checkout code
@@ -74,7 +75,6 @@ jobs:
 
     - name: Update image tag in values.yaml
       run: |
-        # Use the commit hash from the previous job
         sed -i "s/tag: .*/tag: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ needs.docker_build_and_push.outputs.commit_hash }}" values.yaml
 
     - name: Commit and push updated values.yaml
