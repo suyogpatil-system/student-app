@@ -27,7 +27,7 @@ jobs:
   set-commit:
     runs-on: self-hosted
     outputs:
-      commit: ${{ steps.set-commit.outputs.timestamp }}
+      commit: ${{ steps.set-commit.outputs.commit }}
     steps:
       - name: Set commit
         id: set-commit
