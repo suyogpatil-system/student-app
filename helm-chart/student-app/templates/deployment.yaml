@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: application-deployment
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: application
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: application
+  template:
+    metadata:
+      labels:
+        app: application
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: type
+                operator: In
+                values:
+                - application
+      volumes:
+        - name: sql-file-volume
+          configMap:
+            name: {{ .Values.mysql.sqlConfigMapName }}
+      initContainers:
+        - name: init-check-mysql
+          image: mysql:latest
+          env:
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.db.passwordSecretName }}
+                  key: {{ .Values.db.passwordKey }}
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "Starting data migration...";
+              until mysql -h {{ .Values.mysql.host }} -u{{ .Values.db.username }} -p$DB_PASSWORD -e "SELECT 1"; do
+                echo "Waiting for MySQL to be ready...";
+                sleep 5;
+              done;
+              mysql -h {{ .Values.mysql.host }} -u{{ .Values.db.username }} -p$DB_PASSWORD < /mnt/sql/{{ .Values.mysql.sqlFile }};
+              echo "Data migration completed.";
+          volumeMounts:
+            - name: sql-file-volume
+              mountPath: /mnt/sql/{{ .Values.mysql.sqlFile }}
+              subPath: {{ .Values.mysql.sqlFile }}
+      containers:
+        - name: application
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+          - containerPort: {{ .Values.service.port }}
+          env:
+          - name: DB_URL
+            value: jdbc:mysql://{{ .Values.mysql.host }}:3306/{{ .Values.db.name }}
+          - name: DB_USERNAME
+            value: {{ .Values.db.username }}
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.db.passwordSecretName }}
+                key: {{ .Values.db.passwordKey }}
