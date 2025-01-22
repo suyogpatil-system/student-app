@@ -1,0 +1,12 @@
+namespace: student-api-ns
+mysql:
+  image: mysql:latest
+  replicas: 1
+  configMapName: mysql-configmap
+  database: studentdb
+  user: studentuser
+  rootPasswordSecret: db-secret
+  dbPasswordSecret: db-secret
+  nodeSelector:
+    key: type
+    value: database
