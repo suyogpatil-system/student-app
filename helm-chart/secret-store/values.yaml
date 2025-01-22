@@ -1,0 +1,23 @@
+namespace: student-api-ns
+
+vault:
+  server: "http://vault.vault.svc.cluster.local:8200"
+  path: "secret"
+  version: "v2"
+
+secrets:
+  vaultToken:
+    token: cm9vdA== # "root"
+
+externalSecret:
+  name: vault-example
+  secretStoreName: secrectstore-vault-backend
+  refreshInterval: "15s"
+  targetSecretName: db-secret
+  data:
+    - secretKey: DB_PASSWORD
+      remoteKey: secret/db-secret
+      remoteProperty: DB_PASSWORD
+    - secretKey: DB_ROOT_PASSWORD
+      remoteKey: secret/db-secret
+      remoteProperty: DB_ROOT_PASSWORD
