@@ -1,9 +1,8 @@
 # Define variables
 IMAGE_NAME=suyogpatil/student-app
 TAG=v1
-DOCKER_IMAGE=student-api
+DOCKER_IMAGE=student-app
 DOCKER_TAG=v1
-CODE_DIR=src/
 NETWORK_NAME=app-network
 DB_CONTAINER=mysql-container
 DB_PORT=3306
@@ -110,7 +109,7 @@ docker-build:
 	docker build -t $(IMAGE_NAME):$(TAG) .
 
 docker-push:
-	#echo $(DOCKERHUB_PASSWORD) | docker login -u $(DOCKERHUB_USERNAME) --password-stdin
+	@echo $(DOCKERHUB_PASSWORD) | docker login -u $(DOCKERHUB_USERNAME) --password-stdin
 	docker push $(IMAGE_NAME):$(TAG)
 
 all: docker-build docker-push
@@ -119,7 +118,38 @@ all: docker-build docker-push
 docker-compose-start:
 	@chmod +x nginx/envfornginx.sh
 	@./nginx/envfornginx.sh
-	@docker-compose up
+	@docker-compose up --build
+
+helm-install:
+	@echo "Installing helm"
+	@curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+	@chmod 700 get_helm.sh
+	@./get_helm.sh
+
+helm-vault:
+	@echo "Deploy Vault"
+	@helm repo add hashicorp https://helm.releases.hashicorp.com
+	@helm install vault hashicorp/vault --create-namespace --namespace vault --values helm-chart/vault/values.yaml
+	@sleep 60
+
+helm-ESO:
+	@eho "Deploy Eexternal Secret Operator"
+	@helm repo add external-secrets https://charts.external-secrets.io
+	@helm install external-secrets external-secrets/external-secrets -n external-secrets --create-namespace --values helm-chart/ESO/values.yaml
+	@sleep 60
+
+helm-SecretStore:
+	@echo "Fetch secret from vault and store on kubernetes"
+	@helm install secretstore helm-chart/secret-store
+	@sleep 30
+
+helm-db-and-app:
+	@echo "Deploy mysql and application"
+	@helm install mysql helm-chart/mysql
+	@sleep 30
+	@helm install student-app helm-chart/student-app
+
+helm-all: helm-install helm-vault helm-ESO helm-SecretStore helm-db-and-app
 
 #docker-compose-start:
 #	@echo "Starting services using Docker Compose..."
