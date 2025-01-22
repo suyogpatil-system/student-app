@@ -2,7 +2,7 @@ replicaCount: 1
 namespace: student-api-ns
 image:
   repository: suyogpatil/student-app
-  tag: 44178eb
+  tag: b739396
   pullPolicy: IfNotPresent
 service:
   type: NodePort
