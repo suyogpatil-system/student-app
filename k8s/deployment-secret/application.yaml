@@ -59,6 +59,16 @@ spec:
         - name: init-check-mysql
           image: mysql:latest
           env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: application-configmap
+                  key: DB_HOST
+            - name: DB_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: application-configmap
+                  key: DB_USERNAME
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -68,33 +78,44 @@ spec:
           args:
             - |
               echo "Starting data migration...";
-              until mysql -h mysql-service -ustudentuser -p$DB_PASSWORD -e "SELECT 1"; do
+              until mysql -h $DB_HOST -u$DB_USERNAME -p$DB_PASSWORD -e "SELECT 1"; do
                 echo "Waiting for MySQL to be ready...";
                 sleep 5;
               done;
-              mysql -h mysql-service -ustudentuser -p$DB_PASSWORD < /mnt/sql/mysql.sql;
+              mysql -h $DB_HOST -u$DB_USERNAME -p$DB_PASSWORD < /mnt/sql/mysql.sql;
               echo "Data migration completed.";
           volumeMounts:
             - name: sql-file-volume
               mountPath: /mnt/sql/mysql.sql
               subPath: mysql.sql
-
       containers:
       - image: suyogpatil/student-app:v2
         name: application
         ports:
         - containerPort: 8282
         env:
-        - name: DB_URL
-          value: jdbc:mysql://mysql-service:3306/studentdb
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: application-configmap
+              key: DB_HOST
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: application-configmap
+              key: DB_NAME
         - name: DB_USERNAME
-          value: studentuser
+          valueFrom:
+            configMapKeyRef:
+              name: application-configmap
+              key: DB_USERNAME
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
               name: application-secret
               key: DB_PASSWORD
-
+        - name: DB_URL
+          value: jdbc:mysql://$(DB_HOST):3306/$(DB_NAME)
 ---
 apiVersion: v1
 kind: Service
