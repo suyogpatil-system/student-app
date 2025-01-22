@@ -133,7 +133,7 @@ helm-vault:
 	@sleep 60
 
 helm-ESO:
-	@eho "Deploy Eexternal Secret Operator"
+	@echo "Deploy Eexternal Secret Operator"
 	@helm repo add external-secrets https://charts.external-secrets.io
 	@helm install external-secrets external-secrets/external-secrets -n external-secrets --create-namespace --values helm-chart/ESO/values.yaml
 	@sleep 60
