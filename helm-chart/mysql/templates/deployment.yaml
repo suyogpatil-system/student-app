@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: mysql
+  name: mysql-deployment
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.mysql.replicas }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "{{ .Values.mysql.nodeSelector.key }}"
+                operator: In
+                values:
+                - "{{ .Values.mysql.nodeSelector.value }}"
+      containers:
+      - image: "{{ .Values.mysql.image }}"
+        name: mysql
+        ports:
+        - containerPort: 3306
+        envFrom:
+          - configMapRef:
+              name: "{{ .Values.mysql.configMapName }}"
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Values.mysql.rootPasswordSecret }}"
+              key: DB_ROOT_PASSWORD
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Values.mysql.dbPasswordSecret }}"
+              key: DB_PASSWORD
