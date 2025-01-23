@@ -15,16 +15,16 @@
 # Deploy application using docker-compose
 >  make docker-compose-start
 
-# For multi-node kubernetes creation
+# For multi-node kubernetes cluster creation
 >  make launch-cluster
 
 # Install kubectl command
 >  make install-kubectl
 
-# Deploy application using manifest file
+# Deploy application on kubernetes using manifest file
 >  make k8s-deployment
 
-# Deploy application using helm
+# Deploy application on kubernetes using helm
   Using that command following things done:
   1) Install vault
   2) Install External Secret Operator
