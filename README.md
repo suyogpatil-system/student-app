@@ -1,9 +1,9 @@
 # For pre-requisites run this command
   Using that command following things install:
   
-  1)Maven
-  2)Java
-  3)Docker
+  1) Maven
+  2) Java
+  3) Docker
 >  make install-all
 
 # Run this command for jar file build and run locally
