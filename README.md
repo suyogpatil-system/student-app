@@ -10,18 +10,25 @@
 >  make build
 
 # Run this command for launch application on docker
+  Using that command following things create:
+  1) Create network so that launch container inside that network
+  2) Launch mysql container
+  3) Lanch student-app container
 >  make docker-app-run
 
 # Deploy application using docker-compose
 >  make docker-compose-start
 
-# For multi-node kubernetes cluster creation
->  make launch-cluster
-
 # Install kubectl command
 >  make install-kubectl
 
+# For multi-node kubernetes cluster creation
+>  make launch-cluster
+
 # Deploy application on kubernetes using manifest file
+  1) Deploy mysql application
+  2) Create configmap for to migrate mysql data into student-app
+  3) Deploy student-app with init container
 >  make k8s-deployment
 
 # Deploy application on kubernetes using helm
@@ -32,4 +39,3 @@
   4) Deploy database application
   5) Deploy student application
 >  make helm-all
-
