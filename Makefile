@@ -44,8 +44,11 @@ install-docker:
 	@sudo apt-get install -y -f  containerd.io docker-ce docker-ce-cli docker-compose docker-buildx-plugin docker-compose-plugin
 	@docker --version
 	@echo "Docker installation completed!"
+install-docker-compose:
+	@echo "Install docker-compose"
+	@sudo apt  install docker-compose
 
-install-all: install-java install-maven install-docker
+install-all: install-java install-maven install-docker install-docker-compose
 
 # Run Spring Boot application locally
 run:
