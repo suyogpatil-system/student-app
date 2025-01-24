@@ -4,8 +4,9 @@
   1) Maven
   2) Java
   3) Docker
->  make install-all
-
+```
+ make install-all
+```
 # Run this command for jar file build and run locally
 >  make build
 
