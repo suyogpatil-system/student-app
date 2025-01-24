@@ -4,8 +4,8 @@ SHELL := /bin/bash
 # Define variables
 IMAGE_NAME=suyogpatil/student-app
 TAG=v1
-DOCKER_IMAGE=student-app
-DOCKER_TAG=v2
+#DOCKER_IMAGE=student-app
+#DOCKER_TAG=v2
 NETWORK_NAME=app-network
 DB_CONTAINER=mysql-container
 DB_PORT=3306
@@ -134,7 +134,7 @@ docker-compose-start:
 install-kubectl:
         @sudo snap install kubectl --classic
 
-launch-cluster:
+launch-cluster: install-kubectl
         @echo "Launching cluster"
         @chmod +x k8s/setup/minikube-setup.sh
         @bash k8s/setup/minikube-setup.sh
