@@ -49,6 +49,10 @@ install-docker:
         docker --version
         @echo "Docker installation completed!"
 
+install-docker-other:
+        # Install Docker on Ubuntu, CentOS, RHEL, or Debian
+        curl -fsSL https://get.docker.com | sudo bash
+
 install-all: install-java install-maven install-docker
 
 # Run Spring Boot application locally
