@@ -1,3 +1,6 @@
+# Use bash as the shell
+SHELL := /bin/bash
+
 # Define variables
 IMAGE_NAME=suyogpatil/student-app
 TAG=v1
@@ -10,7 +13,8 @@ DB_ROOT_PASSWORD=rootpassword
 DB_NAME=studentdb
 DB_USER=studentuser
 DB_PASSWORD=password
-
+OS_CODENAME := $(shell lsb_release -cs)
+ARCH := $(shell dpkg --print-architecture)
 # Install Java (OpenJDK 17)
 install-java:
         @echo "Installing Java (OpenJDK 17)..."
@@ -20,7 +24,7 @@ install-java:
         @echo "Java installation completed!"
 
 install-maven:
-        @echo "Installing Maven $(MAVEN_VERSION)..."
+        @echo "Installing Maven..."
         sudo apt-get update
         sudo apt-get install -y wget
         wget https://dlcdn.apache.org/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.tar.gz
@@ -31,18 +35,18 @@ install-maven:
         sudo rm -rf apache-maven-3.8.8-bin.*
         @echo "Maven installation completed!"
 
-# Install Docker (optional for containerization)
+# Install Docker
 install-docker:
         @echo "Installing Docker..."
-        @sudo apt-get update
-        @sudo apt-get install ca-certificates curl
-        @sudo install -m 0755 -d /etc/apt/keyrings
-        @sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-        @sudo chmod a+r /etc/apt/keyrings/docker.asc
-        @echo "deb [arch=$(ARCH) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(VERSION_CODENAME) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-        @sudo apt-get update
-        @sudo apt-get install -y -f  containerd.io docker-ce docker-ce-cli docker-compose docker-buildx-plugin docker-compose-plugin
-        @docker --version
+        sudo apt-get update
+        sudo apt-get install -y ca-certificates curl
+        sudo install -m 0755 -d /etc/apt/keyrings
+        sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+        sudo chmod a+r /etc/apt/keyrings/docker.asc
+        echo "deb [arch=$(ARCH) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(OS_CODENAME) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        sudo apt-get update
+        sudo apt-get install -y containerd.io docker-ce docker-ce-cli docker-compose docker-buildx-plugin docker-compose-plugin
+        docker --version
         @echo "Docker installation completed!"
 
 install-all: install-java install-maven install-docker
@@ -104,6 +108,7 @@ docker-app-run: docker-network-create docker-db-run docker-build
         docker run --net=${NETWORK_NAME} -it -P \
         -e DB_URL=jdbc:mysql://${DB_CONTAINER}:${DB_PORT}/${DB_NAME} \
         -e DB_USERNAME=${DB_USER} \
+
         -e DB_PASSWORD=${DB_PASSWORD} \
         ${IMAGE_NAME}:${TAG}
 
@@ -149,18 +154,18 @@ helm-vault:
         @sleep 60
 
 helm-ESO:
-        @echo "Deploy Eexternal Secret Operator"
+        @echo "Deploy External Secret Operator"
         @helm repo add external-secrets https://charts.external-secrets.io
         @helm install external-secrets external-secrets/external-secrets -n external-secrets --create-namespace --values helm-chart/ESO/values.yaml
         @sleep 60
 
 helm-SecretStore:
-        @echo "Fetch secret from vault and store on kubernetes"
+        @echo "Fetch secret from vault and store on Kubernetes"
         @helm install secretstore helm-chart/secret-store
         @sleep 30
 
 helm-db-and-app:
-        @echo "Deploy mysql and application"
+        @echo "Deploy MySQL and application"
         @helm install mysql helm-chart/mysql
         @sleep 30
         @helm install student-app helm-chart/student-app
@@ -170,7 +175,3 @@ helm-all: helm-install helm-vault helm-ESO helm-SecretStore helm-db-and-app
 install-argocd:
         @kubectl create namespace argocd
         @kubectl apply -n argocd -f argocd/setup/install.yaml
-
-#docker-compose-start:
-#       @echo "Starting services using Docker Compose..."
-#       docker-compose up --build
