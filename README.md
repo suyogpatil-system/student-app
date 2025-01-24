@@ -4,6 +4,7 @@
   1) Maven
   2) Java
   3) Docker
+  4) Docker-compose
 ```
 make install-all
 ```
