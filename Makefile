@@ -64,7 +64,7 @@ run:
 build:
 	@echo "Building the API..."
 	mvn clean package -DskipTests
-	DB_URL=jdbc:mysql://localhost:3306/${DB_NAME} DB_USERNAME=${DB_USER} DB_PASSWORD=${DB_PASSWORD} java -jar target/*.jar
+	#DB_URL=jdbc:mysql://localhost:3306/${DB_NAME} DB_USERNAME=${DB_USER} DB_PASSWORD=${DB_PASSWORD} java -jar target/*.jar
 
 # Run tests
 test:
