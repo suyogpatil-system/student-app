@@ -49,3 +49,24 @@ make install-all
   ```
   make helm-all
   ```
+# Setup the ArgoCD Server in a Kubernetes cluster.
+  1) Install Argo CD
+  ```
+  kubectl create ns argocd
+  kubectl apply -f argocd/setup/install.yaml -n argocd
+  ```
+  2) Port Forwarding
+  ```
+  kubectl port-forward svc/argocd-server -n argocd 8080:443
+  ```
+  3) Using that command you will get password for login.
+     - Username of argocd:
+     ```
+     admin
+     ```
+     - Fetch password from secret:
+     ```
+     kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 --decode
+     ```
+
+
