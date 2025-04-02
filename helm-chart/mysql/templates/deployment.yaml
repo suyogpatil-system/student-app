@@ -17,15 +17,15 @@ spec:
       labels:
         app: mysql
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: "{{ .Values.mysql.nodeSelector.key }}"
-                operator: In
-                values:
-                - "{{ .Values.mysql.nodeSelector.value }}"
+      # affinity:
+      #   nodeAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       nodeSelectorTerms:
+      #       - matchExpressions:
+      #         - key: "{{ .Values.mysql.nodeSelector.key }}"
+      #           operator: In
+      #           values:
+      #           - "{{ .Values.mysql.nodeSelector.value }}"
       containers:
       - image: "{{ .Values.mysql.image }}"
         name: mysql
