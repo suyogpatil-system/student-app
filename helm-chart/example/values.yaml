@@ -23,4 +23,4 @@ env:
 rollout:
   blueGreen:
     autoPromotionEnabled: true
-    # autoPromotionSeconds: 300
+    autoPromotionSeconds: 300
