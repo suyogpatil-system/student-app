@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   repository: nginx
   pullPolicy: IfNotPresent
-  tag: "1.26"
+  tag: "1.25"
 
 nameOverride: ""
 fullnameOverride: ""
