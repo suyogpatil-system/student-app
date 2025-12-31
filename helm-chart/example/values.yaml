@@ -19,8 +19,3 @@ labels:
 env:
   - name: VERSION
     value: "v1"
-
-rollout:
-  blueGreen:
-    autoPromotionEnabled: true
-    autoPromotionSeconds: 300
